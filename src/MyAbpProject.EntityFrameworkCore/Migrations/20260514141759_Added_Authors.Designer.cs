@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyAbpProject.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore;
@@ -11,9 +12,11 @@ using Volo.Abp.EntityFrameworkCore;
 namespace MyAbpProject.Migrations
 {
     [DbContext(typeof(MyAbpProjectDbContext))]
-    partial class MyAbpProjectDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260514141759_Added_Authors")]
+    partial class Added_Authors
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
