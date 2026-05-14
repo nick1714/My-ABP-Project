@@ -19,6 +19,7 @@ public class MyAbpProjectPermissionDefinitionProvider : PermissionDefinitionProv
         booksPermission.AddChild(MyAbpProjectPermissions.Books.Create, L("Permission:Books.Create"));
         booksPermission.AddChild(MyAbpProjectPermissions.Books.Edit, L("Permission:Books.Edit"));
         booksPermission.AddChild(MyAbpProjectPermissions.Books.Delete, L("Permission:Books.Delete"));
+        booksPermission.AddChild(MyAbpProjectPermissions.Books.Rename, L("Permission:Books.Rename"));
 
     }
 

@@ -1,4 +1,4 @@
-﻿@page "/books"
+﻿@page "/books_mudtable"
 @using MyAbpProject.Permissions
 @using Volo.Abp.Application.Dtos
 @using MyAbpProject.Books
@@ -19,8 +19,7 @@
                   T="BookDto"
                   @ref="_table"
                   Dense="false"
-                  Hover="true"
-                  Elevation="5">
+                  Hover="true">
             
             @* Thanh công cụ phía trên bảng chứa nút THÊM *@
             <ToolBarContent>
@@ -80,6 +79,7 @@
 
 @code {
     private MudTable<BookDto> _table;
+    private MudDataGrid<BookDto> _dataGrid;
 
 
     // Biến lưu trữ quyền để ẩn/hiện nút tương ứng
@@ -87,7 +87,7 @@
     private bool HasUpdatePermission;
     private bool HasDeletePermission;
 
-    public Book()
+    public Book_MudTable()
     {
         LocalizationResource = typeof(MyAbpProjectResource);
     }
@@ -160,12 +160,12 @@
         // Sau khi sửa thành công, gọi _table.ReloadServerData();
         Snackbar.Add($"Đang mở form sửa sách: {book.Name}", MudBlazor.Severity.Info);
         var options = new DialogOptions
-            {
-                CloseOnEscapeKey = true,
-                BackdropClick = true,
-                MaxWidth = MaxWidth.Small,
-                FullWidth = true
-            };
+        {
+            CloseOnEscapeKey = true,
+            BackdropClick = true,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true
+        };
         var parameters = new DialogParameters { ["Id"] = book.Id };
         // Gọi hiển thị Component BookEditDialog mà ta vừa tạo
         var dialog = await DialogService.ShowAsync<BookEditDialog>("Cập nhật sách", parameters);

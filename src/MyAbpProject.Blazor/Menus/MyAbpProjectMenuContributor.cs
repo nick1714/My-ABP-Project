@@ -34,19 +34,56 @@ public class MyAbpProjectMenuContributor : IMenuContributor
                 order: 1
             )
         );
-        context.Menu.AddItem(
-    new ApplicationMenuItem(
-        "BooksStore",
-        l["Menu:BookStore"],
-        icon: "fa fa-book"
-    ).AddItem(
-        new ApplicationMenuItem(
+        //context.Menu.AddItem(
+        //    new ApplicationMenuItem(
+        //        "BooksStore",
+        //        l["Menu:BookStore"],
+        //        icon: "fa fa-book"
+        //    ).AddItem(
+        //        new ApplicationMenuItem(
+        //            "BooksStore.Books",
+        //            l["Menu:Books_Basic"],
+        //            url: "/books_basic"
+        //        )
+        //    ).AddItem(
+        //        new ApplicationMenuItem(
+        //            "BooksStore.Books",
+        //            l["Menu:Books_MudDataGrid"],
+        //            url: "/books_muddatagrid"
+        //        )
+        //    ).AddItem(
+        //        new ApplicationMenuItem(
+        //            "BooksStore.Books_MudTable",
+        //            l["Menu:Books"],
+        //            url: "/books_mudtable"
+        //        )
+        //    )
+        //);
+
+        var bookStoreMenu = new ApplicationMenuItem(
+            "BooksStore",
+            l["Menu:BookStore"],
+            icon: "fa fa-book"
+        );
+        context.Menu.AddItem(bookStoreMenu);
+
+        bookStoreMenu.AddItem(new ApplicationMenuItem(
             "BooksStore.Books",
-            l["Menu:Books"],
-            url: "/books"
-        )
-    )
-);
+            l["Menu:Books_Basic"],
+            url: "/books_basic"
+        ).RequirePermissions(MyAbpProjectPermissions.Books.Default));
+
+        bookStoreMenu.AddItem(new ApplicationMenuItem(
+            "BooksStore.Books",
+            l["Menu:Books_MudDataGrid"],
+            url: "/books_muddatagrid"
+        ).RequirePermissions(MyAbpProjectPermissions.Books.Default));
+
+        bookStoreMenu.AddItem(new ApplicationMenuItem(
+            "BooksStore.Books",
+            l["Menu:Books_MudTable"],
+            url: "/books_mudtable"
+        ).RequirePermissions(MyAbpProjectPermissions.Books.Default));
 
         //Administration
         var administration = context.Menu.GetAdministration();
