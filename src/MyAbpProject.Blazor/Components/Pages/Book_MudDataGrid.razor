@@ -1,0 +1,195 @@
+﻿@page "/books_muddatagrid"
+@using MyAbpProject.Permissions
+@using System.Threading
+@using Volo.Abp.Application.Dtos
+@using MyAbpProject.Books
+@using MyAbpProject.Localization
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(MyAbpProjectPermissions.Books.Default)]
+
+@inherits MyAbpProject.Blazor.MyAbpProjectComponentBase
+@inject IBookAppService BookAppService
+
+@* Inject 2 dịch vụ của MudBlazor để hiển thị Hộp thoại và Thông báo *@
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<MudCard Elevation="3" Class="m-4">
+    <MudCardContent>
+        <MudDataGrid ServerData="@ServerReload"
+                     T="BookDto"
+                     @ref="_dataGrid"
+                     Dense="false"
+                     Hover="true">
+            
+            @* Thanh công cụ phía trên bảng chứa nút THÊM *@
+            <ToolBarContent>
+                <MudText Typo="Typo.h5" Color="MudBlazor.Color.Primary"><b>@L["Books"]</b></MudText>
+                <MudSpacer />
+                @if (HasCreatePermission)
+                {
+                    <MudButton Variant="Variant.Filled"
+                               Color="MudBlazor.Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Add"
+                               OnClick="OpenCreateDialogAsync">
+                        @L["NewBook"]
+                    </MudButton>
+                }
+            </ToolBarContent>
+
+            <Columns>
+                <PropertyColumn Property="x => x.Name" Title="@L["Name"]" />
+                
+                <TemplateColumn Title="@L["Type"]">
+                    <CellTemplate>
+                        @L[$"Enum:BookType.{context.Item.Type}"]
+                    </CellTemplate>
+                </TemplateColumn>
+
+                <TemplateColumn Title="@L["PublishDate"]" SortBy="x => x.PublishDate">
+                    <CellTemplate>
+                        @context.Item.PublishDate.ToShortDateString()
+                    </CellTemplate>
+                </TemplateColumn>
+
+                <PropertyColumn Property="x => x.Price" Title="@L["Price"]" />
+
+                <TemplateColumn Title="@L["CreationTime"]" SortBy="x => x.CreationTime">
+                    <CellTemplate>
+                        @context.Item.CreationTime.ToLongDateString()
+                    </CellTemplate>
+                </TemplateColumn>
+
+                @* Các nút SỬA và XÓA cho từng dòng *@
+                <TemplateColumn Title="Thao tác" CellClass="text-center" HeaderClass="text-center" Sortable="false">
+                    <CellTemplate>
+                        @if (HasUpdatePermission)
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                           Color="MudBlazor.Color.Warning"
+                                           Size="MudBlazor.Size.Small"
+                                           OnClick="@(() => OpenEditDialogAsync(context.Item))" />
+                        }
+                        @if (HasDeletePermission)
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                           Color="MudBlazor.Color.Error"
+                                           Size="MudBlazor.Size.Small"
+                                           OnClick="@(() => DeleteBookAsync(context.Item))" />
+                        }
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+            
+            <NoRecordsContent><MudText>Không tìm thấy dữ liệu nào.</MudText></NoRecordsContent>
+            <LoadingContent><MudText>Đang tải dữ liệu...</MudText></LoadingContent>
+            <PagerContent><MudDataGridPager PageSizeOptions="new int[] { 10, 25, 50 }" /></PagerContent>
+        </MudDataGrid>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    private MudDataGrid<BookDto> _dataGrid;
+
+    // Biến lưu trữ quyền để ẩn/hiện nút tương ứng
+    private bool HasCreatePermission;
+    private bool HasUpdatePermission;
+    private bool HasDeletePermission;
+
+    public Book_MudDataGrid()
+    {
+        LocalizationResource = typeof(MyAbpProjectResource);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Kiểm tra quyền của user (Thay thế bằng tên Permission đúng của bạn)
+        HasCreatePermission = await AuthorizationService.IsGrantedAsync(MyAbpProjectPermissions.Books.Create);
+        HasUpdatePermission = await AuthorizationService.IsGrantedAsync(MyAbpProjectPermissions.Books.Edit);
+        HasDeletePermission = await AuthorizationService.IsGrantedAsync(MyAbpProjectPermissions.Books.Delete);
+    }
+
+    // Đổi kiểu trả về và tham số đầu vào từ TableState sang GridState
+    private async Task<MudBlazor.GridData<BookDto>> ServerReload(MudBlazor.GridState<BookDto> state, CancellationToken cancellationToken)
+    {
+        string sortQuery = null;
+        
+        // DataGrid quản lý sort dưới dạng danh sách, lấy phần tử đầu tiên nếu có
+        var sortDefinition = state.SortDefinitions.FirstOrDefault();
+        if (sortDefinition != null)
+        {
+            sortQuery = sortDefinition.Descending
+                ? $"{sortDefinition.SortBy} DESC"
+                : $"{sortDefinition.SortBy} ASC";
+        }
+
+        var result = await BookAppService.GetListAsync(new PagedAndSortedResultRequestDto
+        {
+            MaxResultCount = state.PageSize,
+            SkipCount = state.Page * state.PageSize,
+            Sorting = sortQuery
+        });
+
+        // Đổi TableData thành GridData
+        return new MudBlazor.GridData<BookDto>() { TotalItems = (int)result.TotalCount, Items = result.Items };
+    }
+
+    // --- CÁC HÀM XỬ LÝ SỰ KIỆN NÚT BẤM ---
+    private async Task OpenCreateDialogAsync()
+    {
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = true,
+            BackdropClick = true,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true
+        };
+
+        var dialog = await DialogService.ShowAsync<BookCreateDialog>("Thêm sách mới", options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            // Đổi _table thành _dataGrid
+            await _dataGrid.ReloadServerData();
+        }
+    }
+
+    private async Task OpenEditDialogAsync(BookDto book)
+    {
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = true,
+            BackdropClick = true,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true
+        };
+        var parameters = new DialogParameters { ["Id"] = book.Id };
+        
+        var dialog = await DialogService.ShowAsync<BookEditDialog>("Cập nhật sách", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            // Đổi _table thành _dataGrid
+            await _dataGrid.ReloadServerData();
+        }
+    }
+
+    private async Task DeleteBookAsync(BookDto book)
+    {
+        bool? result = await DialogService.ShowMessageBoxAsync(
+            "Xác nhận xóa",
+            $"Bạn có chắc chắn muốn xóa sách '{book.Name}' không? Hành động này không thể hoàn tác.",
+            yesText: "Xóa", cancelText: "Hủy");
+
+        if (result == true)
+        {
+            await BookAppService.DeleteAsync(book.Id);
+            Snackbar.Add("Đã xóa sách thành công", MudBlazor.Severity.Success);
+            
+            // Đổi _table thành _dataGrid
+            await _dataGrid.ReloadServerData();
+        }
+    }
+}

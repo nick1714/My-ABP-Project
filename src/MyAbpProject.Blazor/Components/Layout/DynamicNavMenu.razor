@@ -7,19 +7,39 @@
     {
         @foreach (var menuItem in MainMenu.Items)
         {
-            @* Nếu menu có chứa các menu con bên trong *@
+            @* CẤP 1: Kiểm tra xem menu cha có menu con không *@
             @if (menuItem.Items.Any())
             {
                 <MudNavGroup Title="@menuItem.DisplayName" IconClass="@menuItem.Icon" Expanded="false">
+                    
+                    @* Duyệt qua các menu CẤP 2 *@
                     @foreach (var childItem in menuItem.Items)
                     {
-                        <MudNavLink Href="@childItem.Url" IconClass="@childItem.Icon" Match="NavLinkMatch.Prefix">
-                            @childItem.DisplayName
-                        </MudNavLink>
+                        @* CẤP 2: Kiểm tra xem menu cấp 2 này có chứa menu cấp 3 không (Ví dụ: Identity Management) *@
+                        @if (childItem.Items.Any())
+                        {
+                            <MudNavGroup Title="@childItem.DisplayName" IconClass="@childItem.Icon" Expanded="false">
+                                
+                                @* Duyệt qua các menu CẤP 3 (Ví dụ: Roles, Users) *@
+                                @foreach (var grandChildItem in childItem.Items)
+                                {
+                                    <MudNavLink Href="@grandChildItem.Url?.TrimStart('~')" IconClass="@grandChildItem.Icon" Match="NavLinkMatch.Prefix">
+                                        @grandChildItem.DisplayName
+                                    </MudNavLink>
+                                }
+                            </MudNavGroup>
+                        }
+                        @* Nếu menu CẤP 2 không có con (menu đơn) *@
+                        else
+                        {
+                            <MudNavLink Href="@childItem.Url?.TrimStart('~')" IconClass="@childItem.Icon" Match="NavLinkMatch.Prefix">
+                                @childItem.DisplayName
+                            </MudNavLink>
+                        }
                     }
                 </MudNavGroup>
             }
-            @* Nếu là menu đơn, không có menu con *@
+            @* Nếu CẤP 1 là menu đơn, không có menu con *@
             else
             {
                 <MudNavLink Href="@menuItem.Url" IconClass="@menuItem.Icon" Match="NavLinkMatch.Prefix">
@@ -33,10 +53,8 @@
 @code {
     private ApplicationMenu MainMenu { get; set; }
 
-    // Hàm này tự động chạy khi Component được load
     protected override async Task OnInitializedAsync()
     {
-        // Gọi hệ thống ABP để lấy toàn bộ danh sách Menu chính đã được lọc theo Quyền của user hiện tại
         MainMenu = await MenuManager.GetAsync(StandardMenus.Main);
     }
 }
