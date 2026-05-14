@@ -85,6 +85,12 @@ public class MyAbpProjectMenuContributor : IMenuContributor
             url: "/books_mudtable"
         ).RequirePermissions(MyAbpProjectPermissions.Books.Default));
 
+        context.Menu.AddItem(new ApplicationMenuItem(
+            "BooksStore.Authors",
+            l["Menu:Authors"],
+            url: "/author"
+        ).RequirePermissions(MyAbpProjectPermissions.Books.Default));
+
         //Administration
         var administration = context.Menu.GetAdministration();
         administration.Order = 6;
