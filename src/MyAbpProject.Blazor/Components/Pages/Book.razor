@@ -18,9 +18,9 @@
         <MudTable ServerData="@ServerReload"
                   T="BookDto"
                   @ref="_table"
-                  Dense="true"
+                  Dense="false"
                   Hover="true"
-                  Elevation="0">
+                  Elevation="5">
             
             @* Thanh công cụ phía trên bảng chứa nút THÊM *@
             <ToolBarContent>
@@ -80,7 +80,8 @@
 
 @code {
     private MudTable<BookDto> _table;
-    
+
+
     // Biến lưu trữ quyền để ẩn/hiện nút tương ứng
     private bool HasCreatePermission;
     private bool HasUpdatePermission;
@@ -141,7 +142,7 @@
 
         // Gọi hiển thị Component BookCreateDialog mà ta vừa tạo
         var dialog = await DialogService.ShowAsync<BookCreateDialog>("Thêm sách mới", options);
-    
+
         // Chờ người dùng thao tác xong (bấm Lưu hoặc Hủy)
         var result = await dialog.Result;
 
@@ -158,6 +159,23 @@
         // TODO: Mở Hộp thoại (Dialog) chứa Form cập nhật sách truyền vào book.Id
         // Sau khi sửa thành công, gọi _table.ReloadServerData();
         Snackbar.Add($"Đang mở form sửa sách: {book.Name}", MudBlazor.Severity.Info);
+        var options = new DialogOptions
+            {
+                CloseOnEscapeKey = true,
+                BackdropClick = true,
+                MaxWidth = MaxWidth.Small,
+                FullWidth = true
+            };
+        var parameters = new DialogParameters { ["Id"] = book.Id };
+        // Gọi hiển thị Component BookEditDialog mà ta vừa tạo
+        var dialog = await DialogService.ShowAsync<BookEditDialog>("Cập nhật sách", parameters);
+
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            await _table.ReloadServerData();
+        }
     }
 
     private async Task DeleteBookAsync(BookDto book)

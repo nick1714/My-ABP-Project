@@ -1,0 +1,133 @@
+﻿@using MudBlazor
+@using MyAbpProject.Books
+@using Volo.Abp.Application.Dtos
+@inherits MyAbpProject.Blazor.MyAbpProjectComponentBase
+@inject IBookAppService BookAppService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        @if (isLoading)
+        {
+            <div class="d-flex justify-center my-4">
+                <MudProgressCircular Color="MudBlazor.Color.Primary" Indeterminate="true" />
+            </div>
+        }
+        else
+        {
+            <MudForm @ref="form" IsValidChanged="ValidChanged">
+                <MudTextField @bind-Value="EditingBook.Name"
+                              Label="@L["Name"]"
+                              Required="true"
+                              RequiredError="Tên sách không được để trống!"
+                              Class="mb-3" />
+
+                <MudSelect T="BookType" Label="@L["Type"]" @bind-Value="EditingBook.Type" AnchorOrigin="Origin.BottomCenter" Class="mb-3">
+                    @foreach (BookType type in Enum.GetValues(typeof(BookType)))
+                    {
+                        <MudSelectItem Value="@type">@L[$"Enum:BookType.{type}"]</MudSelectItem>
+                    }
+                </MudSelect>
+
+                <MudDatePicker Label="@L["PublishDate"]"
+                               @bind-Date="PublishDateWrapper"
+                               Required="true"
+                               Class="mb-3" />
+
+                <MudNumericField @bind-Value="EditingBook.Price"
+                                 Label="@L["Price"]"
+                                 Min="0"
+                                 Class="mb-3" />
+            </MudForm>
+        }
+    </DialogContent>
+    
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Text">Hủy</MudButton>
+        <MudButton Color="MudBlazor.Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="@(!isValid || isLoading)">Cập nhật</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+
+    // 1. Thêm Parameter để nhận ID từ Component cha truyền vào
+    [Parameter] public Guid Id { get; set; }
+
+    private MudForm form;
+    private bool isValid;
+    private bool isLoading = true; // Thêm cờ loading
+
+    // Đổi tên biến cho sát nghĩa Update
+    private CreateUpdateBookDto EditingBook { get; set; } = new CreateUpdateBookDto();
+
+    private DateTime? PublishDateWrapper
+    {
+        get => EditingBook.PublishDate;
+        set => EditingBook.PublishDate = value ?? DateTime.Now;
+    }
+
+    public BookEditDialog() // Đổi tên constructor nếu bạn đổi tên file .razor
+    {
+        LocalizationResource = typeof(MyAbpProject.Localization.MyAbpProjectResource);
+    }
+
+    // 2. Tải thông tin của cuốn sách khi mở Dialog
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var bookDto = await BookAppService.GetAsync(Id);
+
+            // Map dữ liệu lấy được sang DTO dùng cho Form
+            // (Nếu trong ABP bạn đã inject IObjectMapper, bạn có thể dùng: EditingBook = ObjectMapper.Map<BookDto, CreateUpdateBookDto>(bookDto);)
+            EditingBook = ObjectMapper.Map<BookDto, CreateUpdateBookDto>(bookDto);
+            // EditingBook = new CreateUpdateBookDto
+            // {
+            //     Name = bookDto.Name,
+            //     Type = bookDto.Type,
+            //     PublishDate = bookDto.PublishDate,
+            //     Price = bookDto.Price
+            // };
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Không thể tải thông tin sách: {ex.Message}", MudBlazor.Severity.Error);
+            MudDialog.Cancel(); // Đóng dialog nếu lỗi tải dữ liệu
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void ValidChanged(bool valid)
+    {
+        isValid = valid;
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private async Task SaveAsync()
+    {
+        await form.ValidateAsync();
+        if (form.IsValid)
+        {
+            try
+            {
+                // 3. Sử dụng UpdateAsync kèm theo Id
+                await BookAppService.UpdateAsync(Id, EditingBook);
+                
+                Snackbar.Add("Cập nhật sách thành công!", MudBlazor.Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Lỗi: {ex.Message}", MudBlazor.Severity.Error);
+            }
+        }
+    }
+}
