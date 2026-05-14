@@ -1,0 +1,99 @@
+﻿@using MudBlazor
+@using MyAbpProject.Books
+@using Volo.Abp.Application.Dtos
+@* Thay MyAbpProjectComponentBase bằng base class chuẩn trong dự án của bạn *@
+@inherits MyAbpProject.Blazor.MyAbpProjectComponentBase
+@inject IBookAppService BookAppService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="form" IsValidChanged="ValidChanged">
+            <MudTextField @bind-Value="NewBook.Name" 
+                          Label="@L["Name"]" 
+                          Required="true" 
+                          RequiredError="Tên sách không được để trống!" 
+                          Class="mb-3" />
+
+            <MudSelect T="BookType" Label="@L["Type"]" @bind-Value="NewBook.Type" AnchorOrigin="Origin.BottomCenter" Class="mb-3">
+                @foreach (BookType type in Enum.GetValues(typeof(BookType)))
+                {
+                    <MudSelectItem Value="@type">@L[$"Enum:BookType.{type}"]</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudDatePicker Label="@L["PublishDate"]" 
+                           @bind-Date="PublishDateWrapper" 
+                           Required="true" 
+                           Class="mb-3" />
+
+            <MudNumericField @bind-Value="NewBook.Price" 
+                             Label="@L["Price"]" 
+                             Min="0" 
+                             Class="mb-3" />
+        </MudForm>
+    </DialogContent>
+    
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Text">Hủy</MudButton>
+        <MudButton Color="MudBlazor.Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="@(!isValid)">Lưu</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    // Thuộc tính này bắt buộc phải có để điều khiển Dialog từ component cha
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+
+    private MudForm form;
+    private bool isValid;
+
+    // Đối tượng DTO để hứng dữ liệu từ Form
+    private CreateUpdateBookDto NewBook { get; set; } = new CreateUpdateBookDto();
+
+    // MudDatePicker dùng DateTime? (có thể null), trong khi DTO của ABP thường dùng DateTime (không null)
+    // Wrapper này giúp chuyển đổi qua lại mượt mà tránh lỗi kiểu dữ liệu
+    private DateTime? PublishDateWrapper
+    {
+        get => NewBook.PublishDate;
+        set => NewBook.PublishDate = value ?? DateTime.Now;
+    }
+
+    public BookCreateDialog()
+    {
+        LocalizationResource = typeof(MyAbpProject.Localization.MyAbpProjectResource); // Cập nhật lại tên Resource của bạn
+    }
+
+    private void ValidChanged(bool valid)
+    {
+        isValid = valid;
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private async Task SaveAsync()
+    {
+        await form.Validate();
+        if (form.IsValid)
+        {
+            try
+            {
+                // Gọi API của ABP để lưu vào Database
+                await BookAppService.CreateAsync(NewBook);
+                
+                // Hiển thị thông báo thành công
+                Snackbar.Add("Thêm sách thành công!", MudBlazor.Severity.Success);
+                
+                // Đóng Dialog và gửi tín hiệu báo thành công về cho trang chính
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            catch (Exception ex)
+            {
+                // ABP thường tự động bắt lỗi Validation, nhưng ta vẫn nên try-catch để an toàn
+                Snackbar.Add($"Lỗi: {ex.Message}", MudBlazor.Severity.Error);
+            }
+        }
+    }
+}

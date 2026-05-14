@@ -1,0 +1,42 @@
+﻿@using MudBlazor
+@using Volo.Abp.UI.Navigation
+@inject IMenuManager MenuManager
+
+<MudNavMenu>
+    @if (MainMenu != null)
+    {
+        @foreach (var menuItem in MainMenu.Items)
+        {
+            @* Nếu menu có chứa các menu con bên trong *@
+            @if (menuItem.Items.Any())
+            {
+                <MudNavGroup Title="@menuItem.DisplayName" IconClass="@menuItem.Icon" Expanded="false">
+                    @foreach (var childItem in menuItem.Items)
+                    {
+                        <MudNavLink Href="@childItem.Url" IconClass="@childItem.Icon" Match="NavLinkMatch.Prefix">
+                            @childItem.DisplayName
+                        </MudNavLink>
+                    }
+                </MudNavGroup>
+            }
+            @* Nếu là menu đơn, không có menu con *@
+            else
+            {
+                <MudNavLink Href="@menuItem.Url" IconClass="@menuItem.Icon" Match="NavLinkMatch.Prefix">
+                    @menuItem.DisplayName
+                </MudNavLink>
+            }
+        }
+    }
+</MudNavMenu>
+
+@code {
+    private ApplicationMenu MainMenu { get; set; }
+
+    // Hàm này tự động chạy khi Component được load
+    protected override async Task OnInitializedAsync()
+    {
+        // Gọi hệ thống ABP để lấy toàn bộ danh sách Menu chính đã được lọc theo Quyền của user hiện tại
+        MainMenu = await MenuManager.GetAsync(StandardMenus.Main);
+    }
+}

@@ -1,0 +1,20 @@
+<Solution>
+    <Folder Name="/src/">
+        <Project Path="src/MyAbpProject.Domain/MyAbpProject.Domain.csproj" />
+        <Project Path="src/MyAbpProject.Application/MyAbpProject.Application.csproj" />
+        <Project Path="src/MyAbpProject.EntityFrameworkCore/MyAbpProject.EntityFrameworkCore.csproj" />
+        <Project Path="src/MyAbpProject.Domain.Shared/MyAbpProject.Domain.Shared.csproj" />
+        <Project Path="src/MyAbpProject.Application.Contracts/MyAbpProject.Application.Contracts.csproj" />
+        <Project Path="src/MyAbpProject.HttpApi/MyAbpProject.HttpApi.csproj" />
+        <Project Path="src/MyAbpProject.HttpApi.Client/MyAbpProject.HttpApi.Client.csproj" />
+        <Project Path="src/MyAbpProject.DbMigrator/MyAbpProject.DbMigrator.csproj" />
+        <Project Path="src/MyAbpProject.Blazor/MyAbpProject.Blazor.csproj" />
+    </Folder>
+    <Folder Name="/test/">
+        <Project Path="test/MyAbpProject.Application.Tests/MyAbpProject.Application.Tests.csproj" />
+        <Project Path="test/MyAbpProject.EntityFrameworkCore.Tests/MyAbpProject.EntityFrameworkCore.Tests.csproj" />
+        <Project Path="test/MyAbpProject.TestBase/MyAbpProject.TestBase.csproj" />
+        <Project Path="test/MyAbpProject.Domain.Tests/MyAbpProject.Domain.Tests.csproj" />
+        <Project Path="test/MyAbpProject.HttpApi.Client.ConsoleTestApp/MyAbpProject.HttpApi.Client.ConsoleTestApp.csproj" />
+    </Folder>
+</Solution>

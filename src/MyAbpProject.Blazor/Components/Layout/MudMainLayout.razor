@@ -1,0 +1,55 @@
+﻿@inherits LayoutComponentBase
+@using MudBlazor
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MudPopoverProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="1">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="MudBlazor.Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <MudText Typo="Typo.h6" Class="ml-3">Ứng dụng của tôi</MudText>
+    
+        <!-- Dòng này đẩy mọi thứ phía dưới nó dạt sang góc phải -->
+        <MudSpacer />
+
+        <!-- Quản lý hiển thị theo trạng thái đăng nhập -->
+        <AuthorizeView>
+            <Authorized>
+                <!-- Nếu ĐÃ đăng nhập: Hiện tên user và nút Đăng xuất -->
+                <MudMenu Label="@context.User.Identity?.Name" Color="MudBlazor.Color.Inherit" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
+                    <MudMenuItem Href="/Account/Manage" Icon="@Icons.Material.Filled.Person">Tài khoản</MudMenuItem>
+                    <MudMenuItem Href="/Account/Logout" Icon="@Icons.Material.Filled.Logout">Đăng xuất</MudMenuItem>
+                </MudMenu>
+            </Authorized>
+            <NotAuthorized>
+                <!-- Nếu CHƯA đăng nhập: Hiện nút Đăng nhập -->
+                <MudButton Href="/Account/Login" Color="MudBlazor.Color.Inherit" Variant="Variant.Outlined">Đăng nhập</MudButton>
+            </NotAuthorized>
+        </AuthorizeView>
+    </MudAppBar>
+
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="2">
+        <!-- Chèn NavMenu vào đây sau -->
+        @* <MudNavMenu>
+            <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Trang chủ</MudNavLink>
+            <MudNavLink Href="/books" Icon="@Icons.Material.Filled.MenuBook">Quản lý sách</MudNavLink>
+        </MudNavMenu> *@
+        <DynamicNavMenu />
+    </MudDrawer>
+
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.Large" Class="my-4 pt-4">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    bool _drawerOpen = true;
+
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+}
