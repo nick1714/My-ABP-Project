@@ -1,3 +1,4 @@
+using MyAbpProject.Authors;
 using MyAbpProject.Books;
 using Riok.Mapperly.Abstractions;
 using Volo.Abp.Mapperly;
@@ -36,4 +37,20 @@ public partial class BookDtoToCreateUpdateBookDtoMapper : MapperBase<BookDto, Cr
     public override partial CreateUpdateBookDto Map(BookDto source);
 
     public override partial void Map(BookDto source, CreateUpdateBookDto destination);
+}
+
+[Mapper]
+public partial class AuthorToAuthorDtoMapper : MapperBase<Author, AuthorDto>
+{
+    public override partial AuthorDto Map(Author source);
+
+    public override partial void Map(Author source, AuthorDto destination);
+}
+
+[Mapper]
+public partial class AuthorToAuthorLookupDtoMapper : MapperBase<Author, AuthorLookupDto>
+{
+    public override partial AuthorLookupDto Map(Author source);
+
+    public override partial void Map(Author source, AuthorLookupDto destination);
 }
