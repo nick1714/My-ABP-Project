@@ -34,7 +34,15 @@
         "Permission:Books.Create": "Creating new books",
         "Permission:Books.Edit": "Editing the books",
         "Permission:Books.Delete": "Deleting the books",
-        "Permission:Books.Rename": "Rename the books"
+        "Permission:Books.Rename": "Rename the books",
+        "MyAbpProject:00001": "There is already an author with the same name: {name}",
+        "Menu:Authors": "Authors",
+        "Authors": "Authors",
+        "AuthorDeletionConfirmationMessage": "Are you sure to delete the author '{0}'?",
+        "BirthDate": "Birth date",
+        "NewAuthor": "New author"
+
+
 
     }
 }

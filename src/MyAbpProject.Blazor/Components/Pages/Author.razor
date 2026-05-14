@@ -1,0 +1,90 @@
+﻿@page "/author"
+@rendermode InteractiveAuto
+@namespace MyAbpProject.Blazor.Components.Pages
+@using MyAbpProject.Authors
+@using MyAbpProject.Localization
+@using MudBlazor
+@inherits MyAbpProjectComponentBase
+@inject IAuthorAppService AuthorAppService
+
+
+
+<MudPaper Elevation="2" Class="pa-4">
+    <MudToolBar Class="px-0 mb-4">
+        <MudText Typo="Typo.h4" GutterBottom="true" Color="MudBlazor.Color.Primary">@L["Author"]</MudText>
+        <MudSpacer />
+        @if (CanCreateAuthor)
+        {
+            <MudButton Variant="Variant.Filled" Color="MudBlazor.Color.Primary" OnClick="OpenCreateAuthorModal">
+                @L["NewAuthor"]
+            </MudButton>
+        }
+    </MudToolBar>
+
+    @* Đã đơn giản hóa ServerData *@
+    <MudTable ServerData="ServerReload" @ref="table" Dense="true" Hover="true" Elevation="0">
+        <HeaderContent>
+            <MudTh>@L["Actions"]</MudTh>
+            <MudTh><MudTableSortLabel SortLabel="Name" T="AuthorDto">@L["Name"]</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortLabel="BirthDate" T="AuthorDto">@L["BirthDate"]</MudTableSortLabel></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="@L["Actions"]">
+                <MudMenu Label="@L["Actions"]" Variant="Variant.Filled" Color="MudBlazor.Color.Primary" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" DisableElevation="true" Dense="true">
+                    @if (CanEditAuthor)
+                    {
+                        <MudMenuItem OnClick="@(() => OpenEditAuthorModal(context))">@L["Edit"]</MudMenuItem>
+                    }
+                    @if (CanDeleteAuthor)
+                    {
+                        <MudMenuItem OnClick="@(() => DeleteAuthorAsync(context))">@L["Delete"]</MudMenuItem>
+                    }
+                </MudMenu>
+            </MudTd>
+            <MudTd DataLabel="@L["Name"]">@context.Name</MudTd>
+            <MudTd DataLabel="@L["BirthDate"]">@context.BirthDate.ToShortDateString()</MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+    </MudTable>
+</MudPaper>
+
+@* MODAL CREATE *@
+<MudDialog @bind-Visible="isCreateModalOpen" Options="dialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">@L["NewAuthor"]</MudText>
+    </TitleContent>
+    <DialogContent>
+        <EditForm id="createAuthorForm" Model="@NewAuthor" OnValidSubmit="CreateAuthorAsync">
+            <DataAnnotationsValidator />
+            <MudTextField @bind-Value="NewAuthor.Name" Label="@L["Name"]" For="@(() => NewAuthor.Name)" />
+            @* Thêm thuộc tính For cho DatePicker để nhận diện được lỗi Validation *@
+            <MudDatePicker @bind-Date="createBirthDate" Label="@L["BirthDate"]" />
+            <MudTextField @bind-Value="NewAuthor.ShortBio" Label="@L["ShortBio"]" Lines="5" For="@(() => NewAuthor.ShortBio)" />
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseCreateAuthorModal">@L["Cancel"]</MudButton>
+        <MudButton Color="MudBlazor.Color.Primary" ButtonType="MudBlazor.ButtonType.Submit" form="createAuthorForm">@L["Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@* MODAL EDIT *@
+<MudDialog @bind-Visible="isEditModalOpen" Options="dialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">@EditingAuthor.Name</MudText>
+    </TitleContent>
+    <DialogContent>
+        <EditForm id="editAuthorForm" Model="@EditingAuthor" OnValidSubmit="UpdateAuthorAsync">
+            <DataAnnotationsValidator />
+            <MudTextField @bind-Value="EditingAuthor.Name" Label="@L["Name"]" For="@(() => EditingAuthor.Name)" />
+            <MudDatePicker @bind-Date="editBirthDate" Label="@L["BirthDate"]" />
+            <MudTextField @bind-Value="EditingAuthor.ShortBio" Label="@L["ShortBio"]" Lines="5" For="@(() => EditingAuthor.ShortBio)" />
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseEditAuthorModal">@L["Cancel"]</MudButton>
+        <MudButton Color="MudBlazor.Color.Primary" ButtonType="MudBlazor.ButtonType.Submit" form="editAuthorForm">@L["Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
