@@ -1,5 +1,4 @@
-﻿
-@page "/books_basic"
+﻿@page "/books_basic"
 @using MyAbpProject.Permissions
 @using System.Threading
 @using Volo.Abp.Application.Dtos
@@ -51,28 +50,3 @@
     </MudCardContent>
 </MudCard>
 
-@code {
-    public Book_Basic()
-    {
-        LocalizationResource = typeof(MyAbpProjectResource);
-    }
-
-    // Hàm này sẽ tự động được gọi bởi MudTable mỗi khi đổi trang, đổi pageSize hoặc Sort
-    private async Task<TableData<BookDto>> ServerReload(TableState state, CancellationToken cancellationToken)
-    {
-        // Gọi thẳng AppService của ABP để lấy dữ liệu
-        var result = await BookAppService.GetListAsync(new PagedAndSortedResultRequestDto
-        {
-            MaxResultCount = state.PageSize,
-            SkipCount = state.Page * state.PageSize,
-            Sorting = state.SortLabel != null ? $"{state.SortLabel} {(state.SortDirection == MudBlazor.SortDirection.Descending ? "DESC" : "ASC")}" : null
-        });
-
-        // Trả về định dạng mà MudTable hiểu được
-        return new TableData<BookDto>()
-        {
-            TotalItems = (int)result.TotalCount,
-            Items = result.Items
-        };
-    }
-}
